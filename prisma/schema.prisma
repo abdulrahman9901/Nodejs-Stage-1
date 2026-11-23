@@ -1,0 +1,25 @@
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Workspace {
+  // TODO(student): Add @map("_id") @db.ObjectId
+  id    String @id @default(auto())
+  name  String @unique
+  tasks Task[]
+}
+
+model Task {
+  // TODO(student): Add @map("_id") @db.ObjectId, onDelete: Cascade, and ESR @@index
+  id          String    @id @default(auto())
+  title       String
+  status      String
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  createdAt   DateTime  @default(now())
+}
