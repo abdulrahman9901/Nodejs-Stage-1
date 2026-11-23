@@ -1,0 +1,14 @@
+{
+  "name": "taskhub-course-lab",
+  "version": "1.0.0",
+  "description": "Stage 1 Node.js Back-End Engineering — Instructor Explain & Student Test Lab Repository",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
