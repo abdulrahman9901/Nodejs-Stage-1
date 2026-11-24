@@ -1,5 +1,11 @@
-export function createTaskHandler(req, res) {
-  const workspaceId = req.params?.workspaceId || req.body?.workspaceId;
+import crypto from "node:crypto";
+import { Router } from "express";
+
+// TODO(student): Enable mergeParams so child router can read :workspaceId from parent route
+export const nestedRouterOptions = { mergeParams: false };
+
+export function createTaskHandler(req, res, tasksStore = null) {
+  const workspaceId = req.params?.workspaceId || req.body?.workspaceId || null;
   const title = req.body?.title?.trim();
 
   if (!title) {
@@ -11,12 +17,41 @@ export function createTaskHandler(req, res) {
     });
   }
 
+  const task = {
+    id: `task-${crypto.randomUUID().slice(0, 8)}`,
+    title,
+    workspaceId,
+    status: "TODO",
+  };
+
+  if (Array.isArray(tasksStore)) {
+    tasksStore.push(task);
+  }
+
   return res.status(201).json({
     success: true,
     message: "Task created",
-    data: { title, workspaceId: workspaceId || null },
+    data: task,
   });
 }
 
-// TODO(student): Enable mergeParams so child router can read :workspaceId
-export const nestedRouterOptions = { mergeParams: false };
+export function createTaskRouter(tasksStore = []) {
+  const router = Router(nestedRouterOptions);
+
+  router.get("/", (req, res) => {
+    const { workspaceId } = req.params;
+    const filtered = workspaceId
+      ? tasksStore.filter((t) => t.workspaceId === workspaceId)
+      : tasksStore;
+
+    return res.status(200).json({
+      success: true,
+      message: "Tasks fetched",
+      data: filtered,
+    });
+  });
+
+  router.post("/", (req, res) => createTaskHandler(req, res, tasksStore));
+
+  return router;
+}
