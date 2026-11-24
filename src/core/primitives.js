@@ -11,8 +11,15 @@ export class AuditEventBus extends EventEmitter {
   constructor() {
     super();
     this.logs = [];
+    this.errors = [];
+
     this.on("audit", (entry) => {
       this.logs.push({ timestamp: new Date().toISOString(), ...entry });
+    });
+
+    // Safe error listener: prevents unhandled "error" events from crashing Node.js
+    this.on("error", (err) => {
+      this.errors.push(err instanceof Error ? err.message : String(err));
     });
   }
 }
