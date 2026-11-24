@@ -1,0 +1,107 @@
+{
+  "info": {
+    "name": "TaskHub — Session 2: HTTP, REST & Envelopes",
+    "description": "Hands-on Postman collection for testing TaskHub S02 contract-server.js status codes (200, 201, 204, 400, 404, 409, 422) and standard JSON envelopes.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. List Workspaces (200 OK)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/workspaces"
+      }
+    },
+    {
+      "name": "2. Create Workspace (201 Created)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Product\"\n}"
+        },
+        "url": "{{baseUrl}}/api/v1/workspaces"
+      }
+    },
+    {
+      "name": "3. Create Workspace — Validation Error (422)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"\"\n}"
+        },
+        "url": "{{baseUrl}}/api/v1/workspaces"
+      }
+    },
+    {
+      "name": "4. Create Workspace — Malformed JSON (400)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{ \"name\": \"Broken JSON\""
+        },
+        "url": "{{baseUrl}}/api/v1/workspaces"
+      }
+    },
+    {
+      "name": "5. Create Workspace — Duplicate Name (409)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Engineering\"\n}"
+        },
+        "url": "{{baseUrl}}/api/v1/workspaces"
+      }
+    },
+    {
+      "name": "6. Delete Workspace (204 No Content)",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/workspaces/ws-2"
+      }
+    },
+    {
+      "name": "7. Delete Unknown Workspace (404 Not Found)",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/api/v1/workspaces/does-not-exist"
+      }
+    }
+  ]
+}

@@ -1,6 +1,14 @@
 # Instructor Explain Guide — Session 2: HTTP, REST & Postman
 
 ## Live Demos
-1. Inspect `src/http/envelope.js` — standardized `{ success, message, data, errorCode }` contract.
-2. Run `node src/http/contract-server.js` and test `GET /api/v1/workspaces`, `POST /api/v1/workspaces` (201 vs 422), and `DELETE /api/v1/workspaces/:id` (204 vs 404).
-3. Run `npm test` to verify all REST status codes and envelopes.
+1. Inspect `src/http/envelope.js` — standardized `{ success, message, data }` and `{ success, errorCode, message, errors? }` contract plus `getStatusForAction()`.
+2. Run `node src/http/contract-server.js` to start the in-memory REST server on `http://localhost:3000`.
+3. Import `postman/TaskHub-S02.postman_collection.json` in Postman (uses `{{baseUrl}}`) and demonstrate each status code live:
+   - `GET /api/v1/workspaces` → `200 OK`
+   - `POST /api/v1/workspaces` (valid body) → `201 Created`
+   - `POST /api/v1/workspaces` (empty/short `name`) → `422 Unprocessable Entity`
+   - `POST /api/v1/workspaces` (malformed JSON) → `400 Bad Request`
+   - `POST /api/v1/workspaces` (duplicate `name`) → `409 Conflict`
+   - `DELETE /api/v1/workspaces/ws-2` → `204 No Content` (empty body!)
+   - `DELETE /api/v1/workspaces/does-not-exist` → `404 Not Found`
+4. Run `npm test` to verify all REST status codes, envelopes, and live HTTP contract endpoints pass.
