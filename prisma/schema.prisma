@@ -7,19 +7,52 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum Role {
+  ADMIN
+  MANAGER
+  MEMBER
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  DONE
+}
+
+model User {
+  // TODO(student): Configure MongoDB _id mapping with auto()
+  id           String      @id
+  email        String      @unique
+  name         String
+  passwordHash String
+  role         Role        @default(MEMBER)
+  workspaces   Workspace[]
+  createdAt    DateTime    @default(now())
+
+  @@map("users")
+}
+
 model Workspace {
   // TODO(student): Add @map("_id") @db.ObjectId
-  id    String @id @default(auto())
-  name  String @unique
-  tasks Task[]
+  id        String   @id @default(auto())
+  name      String   @unique
+  ownerId   String   @db.ObjectId
+  owner     User     @relation(fields: [ownerId], references: [id])
+  tasks     Task[]
+  createdAt DateTime @default(now())
+
+  @@map("workspaces")
 }
 
 model Task {
-  // TODO(student): Add @map("_id") @db.ObjectId, onDelete: Cascade, and ESR @@index
-  id          String    @id @default(auto())
+  // TODO(student): Add @map("_id") @db.ObjectId, onDelete: Cascade on workspace relation, and ESR @@index
+  id          String     @id @default(auto())
   title       String
-  status      String
-  workspaceId String
-  workspace   Workspace @relation(fields: [workspaceId], references: [id])
-  createdAt   DateTime  @default(now())
+  status      TaskStatus @default(TODO)
+  workspaceId String     @db.ObjectId
+  workspace   Workspace  @relation(fields: [workspaceId], references: [id])
+  createdAt   DateTime   @default(now())
+
+  @@map("tasks")
 }
