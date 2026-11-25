@@ -28,6 +28,7 @@ model User {
   role         Role        @default(MEMBER)
   workspaces   Workspace[]
   createdAt    DateTime    @default(now())
+
   @@map("users")
 }
 
@@ -38,6 +39,7 @@ model Workspace {
   owner     User     @relation(fields: [ownerId], references: [id])
   tasks     Task[]
   createdAt DateTime @default(now())
+
   @@map("workspaces")
 }
 
@@ -48,6 +50,7 @@ model Task {
   workspaceId String     @db.ObjectId
   workspace   Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   createdAt   DateTime   @default(now())
+
   @@index([workspaceId, status, createdAt(sort: Desc)])
   @@map("tasks")
 }
