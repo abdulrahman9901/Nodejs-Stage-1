@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "TaskHub — Session 2: HTTP, REST & Envelopes",
-    "description": "Hands-on Postman collection for testing TaskHub S02 contract-server.js status codes (200, 201, 204, 400, 404, 409, 422) and standard JSON envelopes.",
+    "description": "Hands-on Postman collection for testing TaskHub S02 contract-server.js status codes (200, 201, 204, 400, 404, 409, 422), PATCH partial updates, and pm.test() assertions.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -13,6 +13,18 @@
   "item": [
     {
       "name": "1. List Workspaces (200 OK)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+              "pm.test('Envelope success is true', () => pm.expect(pm.response.json().success).to.eql(true));"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "GET",
         "header": [],
@@ -21,6 +33,18 @@
     },
     {
       "name": "2. Create Workspace (201 Created)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+              "pm.test('Returns created workspace', () => pm.expect(pm.response.json().data.name).to.eql('Product'));"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "POST",
         "header": [
@@ -38,6 +62,18 @@
     },
     {
       "name": "3. Create Workspace — Validation Error (422)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 422', () => pm.response.to.have.status(422));",
+              "pm.test('ErrorCode is VALIDATION_ERROR', () => pm.expect(pm.response.json().errorCode).to.eql('VALIDATION_ERROR'));"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "POST",
         "header": [
@@ -88,7 +124,47 @@
       }
     },
     {
-      "name": "6. Delete Workspace (204 No Content)",
+      "name": "6. Partial Update Workspace — PATCH (200 OK)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+              "pm.test('Workspace renamed', () => pm.expect(pm.response.json().data.name).to.eql('Product Design'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Product Design\"\n}"
+        },
+        "url": "{{baseUrl}}/api/v1/workspaces/ws-2"
+      }
+    },
+    {
+      "name": "7. Delete Workspace (204 No Content)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 204', () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "DELETE",
         "header": [],
@@ -96,7 +172,7 @@
       }
     },
     {
-      "name": "7. Delete Unknown Workspace (404 Not Found)",
+      "name": "8. Delete Unknown Workspace (404 Not Found)",
       "request": {
         "method": "DELETE",
         "header": [],
