@@ -37,7 +37,7 @@ test("S02: REST status code mapping matches HTTP specification", () => {
   assert.equal(getStatusForAction("UNKNOWN_ACTION"), 500);
 });
 
-test("S02: contract-server serves 200, 201, 422, 400, 409, 204, and 404 with standard envelopes", async () => {
+test("S02: contract-server serves GET, POST, PATCH, and DELETE with standard envelopes", async () => {
   const server = createContractServer();
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
   const { port } = server.address();
@@ -97,14 +97,33 @@ test("S02: contract-server serves 200, 201, 422, 400, 409, 204, and 404 with sta
     assert.equal(conflictBody.success, false);
     assert.equal(conflictBody.errorCode, "CONFLICT");
 
-    // 6. DELETE created workspace -> 204 No Content
+    // 6. PATCH partial update -> 200 (and 409 on duplicate name)
+    const patchRes = await fetch(`${baseUrl}/api/v1/workspaces/${createdId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: "Product V2" }),
+    });
+    assert.equal(patchRes.status, 200);
+    const patchBody = await patchRes.json();
+    assert.equal(patchBody.success, true);
+    assert.equal(patchBody.data.name, "Product V2");
+    assert.ok(patchBody.data.updatedAt);
+
+    const patchDupRes = await fetch(`${baseUrl}/api/v1/workspaces/${createdId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: "Engineering" }),
+    });
+    assert.equal(patchDupRes.status, 409);
+
+    // 7. DELETE created workspace -> 204 No Content
     const deleteRes = await fetch(`${baseUrl}/api/v1/workspaces/${createdId}`, {
       method: "DELETE",
     });
     assert.equal(deleteRes.status, 204);
     assert.equal(await deleteRes.text(), "");
 
-    // 7. DELETE non-existent workspace -> 404 Not Found
+    // 8. DELETE non-existent workspace -> 404 Not Found
     const notFoundRes = await fetch(`${baseUrl}/api/v1/workspaces/does-not-exist`, {
       method: "DELETE",
     });

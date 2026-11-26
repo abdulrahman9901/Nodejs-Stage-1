@@ -32,7 +32,7 @@ node src/http/contract-server.js
    - **Initial & Current Value:** `http://localhost:3000`
 3. Save the collection and use `{{baseUrl}}` in every request URL below (never hardcode `localhost:3000`).
 
-### 2. Trigger & Verify Every HTTP Status Code + Envelope
+### 2. Trigger & Verify Every HTTP Method, Status Code & Envelope
 Create and run each request inside your **TaskHub S02** collection, and verify **both** the HTTP status code and the JSON envelope:
 
 | # | Request | Body / Headers | Expected Status | What to Verify |
@@ -42,8 +42,17 @@ Create and run each request inside your **TaskHub S02** collection, and verify *
 | 3 | `POST {{baseUrl}}/api/v1/workspaces` | `Content-Type: application/json`<br>`{ "name": "" }` | **422 Unprocessable Entity** | `success: false`, `errorCode: "VALIDATION_ERROR"`, `errors` array has 1 item for `field: "name"` |
 | 4 | `POST {{baseUrl}}/api/v1/workspaces` | `Content-Type: application/json`<br>`{ "name": "Broken JSON"` *(missing closing `}`)* | **400 Bad Request** | `success: false`, `errorCode: "BAD_JSON"` |
 | 5 | `POST {{baseUrl}}/api/v1/workspaces` | `Content-Type: application/json`<br>`{ "name": "Engineering" }` | **409 Conflict** | `success: false`, `errorCode: "CONFLICT"`, no `errors` key |
-| 6 | `DELETE {{baseUrl}}/api/v1/workspaces/ws-2` | None | **204 No Content** | Response body is completely **empty** |
-| 7 | `DELETE {{baseUrl}}/api/v1/workspaces/does-not-exist` | None | **404 Not Found** | `success: false`, `errorCode: "NOT_FOUND"` |
+| 6 | `PATCH {{baseUrl}}/api/v1/workspaces/ws-2` | `Content-Type: application/json`<br>`{ "name": "Product Design" }` | **200 OK** | `success: true`, `data.name === "Product Design"`, `updatedAt` added (partial update, idempotent!) |
+| 7 | `DELETE {{baseUrl}}/api/v1/workspaces/ws-2` | None | **204 No Content** | Response body is completely **empty** |
+| 8 | `DELETE {{baseUrl}}/api/v1/workspaces/does-not-exist` | None | **404 Not Found** | `success: false`, `errorCode: "NOT_FOUND"` |
 
-### 3. Bonus Challenge
-Re-run Request #1 (`GET {{baseUrl}}/api/v1/workspaces`) and confirm `"Design"` (`ws-2`) is gone and `"Product"` is now in the list. Export your Postman collection as JSON!
+### 3. Add Automated Postman Assertions (`pm.test`)
+In Request #2 (`POST /api/v1/workspaces`), open the **Scripts → Post-response** tab (or **Tests** tab) and add:
+```javascript
+pm.test("Status is 201", () => pm.response.to.have.status(201));
+pm.test("Envelope success is true", () => pm.expect(pm.response.json().success).to.eql(true));
+```
+Send the request and verify the **Test Results** tab shows `2/2 Passed`!
+
+### 4. Bonus Challenge
+Re-run Request #1 (`GET {{baseUrl}}/api/v1/workspaces`) and confirm `"ws-2"` is gone and `"Product"` is now in the list. Export your Postman collection as JSON!

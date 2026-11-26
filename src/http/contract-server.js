@@ -19,6 +19,11 @@ function readRawBody(req) {
   });
 }
 
+async function parseJsonBody(req) {
+  const rawBody = await readRawBody(req);
+  return rawBody ? JSON.parse(rawBody) : {};
+}
+
 const DEFAULT_WORKSPACES = [
   { id: "ws-1", name: "Engineering", createdAt: "2026-01-01T00:00:00.000Z" },
   { id: "ws-2", name: "Design", createdAt: "2026-01-02T00:00:00.000Z" },
@@ -43,10 +48,9 @@ export function createContractServer(initialWorkspaces = DEFAULT_WORKSPACES) {
 
     // POST /api/v1/workspaces
     if (method === "POST" && pathname === "/api/v1/workspaces") {
-      const rawBody = await readRawBody(req);
       let body;
       try {
-        body = rawBody ? JSON.parse(rawBody) : {};
+        body = await parseJsonBody(req);
       } catch {
         return sendJson(
           res,
@@ -110,6 +114,64 @@ export function createContractServer(initialWorkspaces = DEFAULT_WORKSPACES) {
         );
       }
 
+      // PATCH /api/v1/workspaces/:id (partial update & idempotency demo)
+      if (method === "PATCH") {
+        if (index === -1) {
+          return sendJson(
+            res,
+            getStatusForAction("NOT_FOUND"),
+            errorEnvelope("NOT_FOUND", `Workspace "${id}" not found`)
+          );
+        }
+
+        let body;
+        try {
+          body = await parseJsonBody(req);
+        } catch {
+          return sendJson(
+            res,
+            getStatusForAction("BAD_JSON"),
+            errorEnvelope("BAD_JSON", "Malformed JSON request body")
+          );
+        }
+
+        if (body.name !== undefined) {
+          const cleanName = typeof body.name === "string" ? body.name.trim() : "";
+          if (cleanName.length < 2) {
+            return sendJson(
+              res,
+              getStatusForAction("VALIDATION_ERROR"),
+              errorEnvelope("VALIDATION_ERROR", "Invalid workspace payload", [
+                { field: "name", message: "Name must be at least 2 characters" },
+              ])
+            );
+          }
+
+          const duplicate = workspaces.some(
+            (w, idx) => idx !== index && w.name.toLowerCase() === cleanName.toLowerCase()
+          );
+          if (duplicate) {
+            return sendJson(
+              res,
+              getStatusForAction("CONFLICT"),
+              errorEnvelope("CONFLICT", `Workspace "${cleanName}" already exists`)
+            );
+          }
+
+          workspaces[index] = {
+            ...workspaces[index],
+            name: cleanName,
+            updatedAt: new Date().toISOString(),
+          };
+        }
+
+        return sendJson(
+          res,
+          getStatusForAction("READ"),
+          okEnvelope("Workspace updated", workspaces[index])
+        );
+      }
+
       if (method === "DELETE") {
         if (index === -1) {
           return sendJson(
@@ -143,6 +205,7 @@ if (isDirectRun) {
     console.log("      GET    /api/v1/workspaces");
     console.log("      GET    /api/v1/workspaces/:id");
     console.log("      POST   /api/v1/workspaces");
+    console.log("      PATCH  /api/v1/workspaces/:id");
     console.log("      DELETE /api/v1/workspaces/:id");
   });
 }
