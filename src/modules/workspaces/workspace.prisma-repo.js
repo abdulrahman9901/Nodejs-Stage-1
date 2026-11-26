@@ -3,7 +3,7 @@
  * - findAll(): Promise<Workspace[]>
  * - findById(id): Promise<Workspace | null>
  * - findByName(name): Promise<Workspace | null>
- * - create(data): Promise<Workspace> (must set internalFlag: true)
+ * - create(data): Promise<Workspace> (pass { name: data.name, ownerId: data.ownerId })
  * - deleteById(id): Promise<boolean> (must return false if record not found / throws)
  */
 export class PrismaWorkspaceRepository {
