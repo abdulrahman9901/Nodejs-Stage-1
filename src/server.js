@@ -7,16 +7,19 @@ const isDirectRun =
 
 if (isDirectRun) {
   const app = createApp();
+
+  // `app.listen(...)` returns the running Node `http.Server` instance
   const server = app.listen(serverConfig.port, serverConfig.host, () => {
     console.log(
       `[BOOT] ${serverConfig.appName} (Express) listening on http://${serverConfig.host}:${serverConfig.port}`
     );
   });
 
-  // 1. Create the shutdown handler bound to our live HTTP server (and Prisma client if present)
+  // Step 1: Pass `server` and `prisma` into createGracefulShutdown.
+  //         It returns a `shutdown` function that remembers them via closure!
   const shutdown = createGracefulShutdown({ server, prisma: null });
 
-  // 2. Listen for OS termination signals (Docker/K8s sends SIGTERM; Ctrl+C sends SIGINT)
-  process.on("SIGTERM", () => shutdown("SIGTERM"));
-  process.on("SIGINT", () => shutdown("SIGINT"));
+  // Step 2: Tell Node.js to call `shutdown` whenever the OS asks the app to stop:
+  process.on("SIGTERM", () => shutdown("SIGTERM")); // Sent by Docker / Kubernetes / Cloud on deploy
+  process.on("SIGINT", () => shutdown("SIGINT"));   // Sent when you press Ctrl + C in the terminal
 }
