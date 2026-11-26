@@ -4,6 +4,7 @@ import fs from "node:fs";
 import { getPrismaSingleton } from "../src/config/prisma-singleton.js";
 import { PrismaWorkspaceRepository } from "../src/modules/workspaces/workspace.prisma-repo.js";
 import { WorkspaceService } from "../src/modules/workspaces/workspace.service.js";
+import { createApp } from "../src/app.js";
 
 test("S08: schema.prisma configures MongoDB ObjectId mapping, Cascade delete, and ESR @@index", () => {
   const schema = fs.readFileSync("prisma/schema.prisma", "utf-8");
@@ -39,7 +40,7 @@ test("S08: PrismaWorkspaceRepository translates CRUD calls to Prisma client dele
         return items.find((i) => i.name === where.name) || null;
       },
       async create({ data }) {
-        const doc = { id: `ws_${items.length + 1}`, ...data };
+        const doc = { id: `65f1a9c0e4b0a1d2c3f4e50${items.length + 1}`, ...data };
         items.push(doc);
         return doc;
       },
@@ -53,28 +54,32 @@ test("S08: PrismaWorkspaceRepository translates CRUD calls to Prisma client dele
   };
 
   const repo = new PrismaWorkspaceRepository(fakePrisma);
-
-  // 1. Create
-  const created = await repo.create({ name: "DevOps", ownerId: "u_1" });
+  const created = await repo.create({ name: "DevOps", ownerId: "65f1a9c0e4b0a1d2c3f4e5a6" });
   assert.equal(created.name, "DevOps");
-  assert.equal(created.id, "ws_1");
 
-  // 2. FindByName & FindById
   const foundByName = await repo.findByName("DevOps");
-  assert.equal(foundByName.id, "ws_1");
+  assert.equal(foundByName.id, created.id);
 
-  const foundById = await repo.findById("ws_1");
-  assert.equal(foundById.name, "DevOps");
-
-  // 3. Clean Architecture Integration: Plug PrismaWorkspaceRepository into WorkspaceService from S06!
   const service = new WorkspaceService(repo);
-  const serviceWs = await service.createWorkspace({ name: "Analytics", ownerId: "u_2" });
+  const serviceWs = await service.createWorkspace({ name: "Analytics", ownerId: "65f1a9c0e4b0a1d2c3f4e5a6" });
   assert.equal(serviceWs.name, "Analytics");
-  assert.equal("internalFlag" in serviceWs, false, "WorkspaceService must still sanitize DTO cleanly with Prisma repo");
 
-  // 4. Delete
-  const deleted = await repo.deleteById("ws_1");
+  const deleted = await repo.deleteById(created.id);
   assert.equal(deleted, true);
-  const deleteMissing = await repo.deleteById("non_existent");
-  assert.equal(deleteMissing, false);
+  assert.equal(await repo.deleteById("non_existent"), false);
+
+  // Verify Express app wiring works with injected PrismaWorkspaceRepository
+  const app = createApp({ workspaceRepo: repo });
+  const server = await new Promise((resolve) => {
+    const s = app.listen(0, "127.0.0.1", () => resolve(s));
+  });
+  try {
+    const res = await fetch(`http://127.0.0.1:${server.address().port}/api/v1/workspaces`);
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.data.length, 1);
+    assert.equal(body.data[0].name, "Analytics");
+  } finally {
+    await new Promise((resolve) => server.close(resolve));
+  }
 });

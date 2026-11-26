@@ -12,7 +12,9 @@ export class PrismaWorkspaceRepository {
   }
 
   async findAll() {
-    return this.prisma.workspace.findMany();
+    return this.prisma.workspace.findMany({
+      orderBy: { createdAt: "desc" },
+    });
   }
 
   async findById(id) {
@@ -22,7 +24,6 @@ export class PrismaWorkspaceRepository {
   }
 
   async findByName(name) {
-    // In MongoDB / Prisma, exact match or insensitive where available
     return this.prisma.workspace.findFirst({
       where: { name },
     });
@@ -33,7 +34,6 @@ export class PrismaWorkspaceRepository {
       data: {
         name: data.name,
         ownerId: data.ownerId,
-        internalFlag: true,
       },
     });
   }
