@@ -21,8 +21,8 @@ enum TaskStatus {
 }
 
 model User {
-  // TODO(student): Configure MongoDB _id mapping with auto()
-  id           String      @id
+  // TODO(student): Add @map("_id") @db.ObjectId
+  id           String      @id @default(auto())
   email        String      @unique
   name         String
   passwordHash String

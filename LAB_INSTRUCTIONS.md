@@ -67,7 +67,7 @@ docker compose up -d
 ### Step 2: Create `.env` and Push Your Schema
 1. Copy `.env.example` to `.env`:
    ```bash
-   cp .env.example .env
+   cp .env.example .env   # PowerShell: Copy-Item .env.example .env
    ```
    *(Make sure `DATABASE_URL="mongodb://127.0.0.1:27017/taskhub_db?replicaSet=rs0"` is set.)*
 2. Generate the Prisma Client, push your schema & indexes to MongoDB, and seed initial data:
