@@ -16,9 +16,21 @@ export const createTaskSchema = z.object({
   }),
 });
 
+export const taskQuerySchema = z.object({
+  params: z.object({
+    workspaceId: objectIdSchema,
+  }),
+  query: z.object({
+    page: z.coerce.number().int().min(1).default(1),
+    limit: z.coerce.number().int().min(1).max(50).default(10),
+  }),
+});
+
 /**
- * Reusable Express Zod validation gate middleware.
+ * Reusable Express 5 Zod validation gate middleware.
  * Validates { body, params, query } and returns 422 VALIDATION_ERROR on failure.
+ * Note: Express 5 defines `req.query` as a read-only getter on IncomingMessage,
+ * so we store parsed values on `req.validated` and redefine `req.query` safely.
  */
 export function validate(schema) {
   return (req, res, next) => {
@@ -41,9 +53,17 @@ export function validate(schema) {
       });
     }
 
+    req.validated = result.data;
     if (result.data.body) req.body = result.data.body;
     if (result.data.params) req.params = result.data.params;
-    if (result.data.query) req.query = result.data.query;
+    if (result.data.query) {
+      Object.defineProperty(req, "query", {
+        value: result.data.query,
+        writable: true,
+        configurable: true,
+        enumerable: true,
+      });
+    }
     return next();
   };
 }

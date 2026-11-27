@@ -1,7 +1,7 @@
 {
   "name": "taskhub-course-lab",
   "version": "1.0.0",
-  "description": "Stage 1 Node.js Back-End Engineering — Instructor Explain & Student Test Lab Repository",
+  "description": "Stage 1 Node.js Back-End Engineering \u2014 Instructor Explain & Student Test Lab Repository",
   "type": "module",
   "scripts": {
     "start": "node --env-file-if-exists=.env src/server.js",
@@ -9,7 +9,8 @@
     "test": "node --test",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "db:seed": "node --env-file-if-exists=.env prisma/seed.js"
   },
   "engines": {
     "node": ">=20.0.0"
