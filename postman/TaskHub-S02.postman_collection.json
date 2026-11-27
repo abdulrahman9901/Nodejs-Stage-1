@@ -1,6 +1,6 @@
 {
   "info": {
-    "name": "TaskHub — Session 2: HTTP, REST & Envelopes",
+    "name": "TaskHub \u2014 Session 2: HTTP, REST & Envelopes",
     "description": "Hands-on Postman collection for testing TaskHub S02 contract-server.js status codes (200, 201, 204, 400, 404, 409, 422), PATCH partial updates, and pm.test() assertions.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
@@ -61,7 +61,7 @@
       }
     },
     {
-      "name": "3. Create Workspace — Validation Error (422)",
+      "name": "3. Create Workspace \u2014 Validation Error (422)",
       "event": [
         {
           "listen": "test",
@@ -90,7 +90,7 @@
       }
     },
     {
-      "name": "4. Create Workspace — Malformed JSON (400)",
+      "name": "4. Create Workspace \u2014 Malformed JSON (400)",
       "request": {
         "method": "POST",
         "header": [
@@ -104,10 +104,22 @@
           "raw": "{ \"name\": \"Broken JSON\""
         },
         "url": "{{baseUrl}}/api/v1/workspaces"
-      }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 400', () => pm.response.to.have.status(400));",
+              "pm.test('ErrorCode is INVALID_JSON', () => pm.expect(pm.response.json().errorCode).to.eql('INVALID_JSON'));"
+            ]
+          }
+        }
+      ]
     },
     {
-      "name": "5. Create Workspace — Duplicate Name (409)",
+      "name": "5. Create Workspace \u2014 Duplicate Name (409)",
       "request": {
         "method": "POST",
         "header": [
@@ -121,10 +133,22 @@
           "raw": "{\n  \"name\": \"Engineering\"\n}"
         },
         "url": "{{baseUrl}}/api/v1/workspaces"
-      }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 409', () => pm.response.to.have.status(409));",
+              "pm.test('ErrorCode is DUPLICATE_WORKSPACE', () => pm.expect(pm.response.json().errorCode).to.eql('DUPLICATE_WORKSPACE'));"
+            ]
+          }
+        }
+      ]
     },
     {
-      "name": "6. Partial Update Workspace — PATCH (200 OK)",
+      "name": "6. Partial Update Workspace \u2014 PATCH (200 OK)",
       "event": [
         {
           "listen": "test",
@@ -177,7 +201,19 @@
         "method": "DELETE",
         "header": [],
         "url": "{{baseUrl}}/api/v1/workspaces/does-not-exist"
-      }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 404', () => pm.response.to.have.status(404));",
+              "pm.test('ErrorCode is NOT_FOUND', () => pm.expect(pm.response.json().errorCode).to.eql('NOT_FOUND'));"
+            ]
+          }
+        }
+      ]
     }
   ]
 }
