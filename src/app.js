@@ -1,6 +1,6 @@
 import express from "express";
 import { AppError } from "./utils/app-error.js";
-import { createTaskSchema, validate } from "./middlewares/validate.js";
+import { createTaskSchema, taskQuerySchema, validate } from "./middlewares/validate.js";
 import { globalErrorHandler } from "./middlewares/error-handler.js";
 
 export function createApp() {
@@ -8,6 +8,21 @@ export function createApp() {
   const tasks = [];
 
   app.use(express.json());
+
+  app.get("/api/v1/workspaces/:workspaceId/tasks", validate(taskQuerySchema), (req, res) => {
+    const { workspaceId } = req.params;
+    const { page, limit } = req.query;
+    const items = tasks.filter((t) => t.workspaceId === workspaceId);
+    const start = (page - 1) * limit;
+    return res.status(200).json({
+      success: true,
+      message: "Tasks fetched",
+      data: {
+        items: items.slice(start, start + limit),
+        pagination: { page, limit, total: items.length },
+      },
+    });
+  });
 
   app.post("/api/v1/workspaces/:workspaceId/tasks", validate(createTaskSchema), (req, res, next) => {
     const { workspaceId } = req.params;

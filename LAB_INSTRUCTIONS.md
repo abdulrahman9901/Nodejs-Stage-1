@@ -27,3 +27,6 @@ npm install
 ## Part C: Verify (~10 min)
 1. Run `npm test` — all 5 tests must pass!
 2. Run `npm run dev` and test `POST http://localhost:3000/api/v1/workspaces/65f1a9c0e4b0a1d2c3f4e5a6/tasks` in Postman with valid, invalid, and duplicate payloads.
+
+
+> **Express 5 Note:** In Express 5 ESM, `req.query` is a read-only getter. Use `Object.defineProperty(req, "query", { value: result.data.query, writable: true, configurable: true, enumerable: true })` and `req.validated = result.data` inside `validate()`.

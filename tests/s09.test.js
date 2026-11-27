@@ -70,6 +70,12 @@ test("S09: Zod validate(createTaskSchema) rejects bad ObjectId or short title (4
     assert.equal(dupRes.status, 409);
     const dupBody = await dupRes.json();
     assert.equal(dupBody.errorCode, "DUPLICATE_RECORD");
+    // 4. GET with query params exercises Express 5 req.query validation (z.coerce.number)
+    const listRes = await fetch(`${baseUrl}/api/v1/workspaces/${validWsId}/tasks?page=2&limit=5`);
+    assert.equal(listRes.status, 200);
+    const listBody = await listRes.json();
+    assert.equal(listBody.data.pagination.page, 2);
+    assert.equal(listBody.data.pagination.limit, 5);
   } finally {
     await new Promise((resolve) => server.close(resolve));
   }
