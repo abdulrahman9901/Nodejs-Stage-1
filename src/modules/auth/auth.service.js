@@ -33,7 +33,7 @@ export class AuthService {
       email: cleanEmail,
       name: name?.trim() || "Member",
       role,
-      passwordHash: hashPassword(password),
+      passwordHash: await hashPassword(password),
     };
     this.users.push(user);
 
@@ -45,7 +45,7 @@ export class AuthService {
     const user = this.users.find((u) => u.email === cleanEmail);
 
     // User Enumeration Defense: identical 401 status & message whether email is missing or password is wrong
-    if (!user || !verifyPassword(password || "", user.passwordHash)) {
+    if (!user || !(await verifyPassword(password || "", user.passwordHash))) {
       const err = new Error("Invalid email or password");
       err.statusCode = 401;
       err.errorCode = "INVALID_CREDENTIALS";

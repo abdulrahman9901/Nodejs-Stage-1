@@ -1,16 +1,19 @@
 import crypto from "node:crypto";
+import { promisify } from "node:util";
 
-export function hashPassword(plainPassword) {
+const scryptAsync = promisify(crypto.scrypt);
+
+export async function hashPassword(plainPassword) {
   const salt = crypto.randomBytes(16).toString("hex");
-  const derived = crypto.scryptSync(plainPassword, salt, 64).toString("hex");
+  const derived = (await scryptAsync(plainPassword, salt, 64)).toString("hex");
   return `${salt}:${derived}`;
 }
 
-export function verifyPassword(plainPassword, storedHash) {
+export async function verifyPassword(plainPassword, storedHash) {
   const [salt, keyHex] = String(storedHash || "").split(":");
   if (!salt || !keyHex) return false;
   const keyBuf = Buffer.from(keyHex, "hex");
-  const derivedBuf = crypto.scryptSync(plainPassword, salt, 64);
+  const derivedBuf = await scryptAsync(plainPassword, salt, 64);
   if (keyBuf.length !== derivedBuf.length) return false;
   return crypto.timingSafeEqual(keyBuf, derivedBuf);
 }
