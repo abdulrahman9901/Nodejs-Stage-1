@@ -38,7 +38,7 @@ export function createTcp4TupleServer() {
   });
 }
 
-if (process.argv[1]?.endsWith("tcp-4tuple-demo.js")) {
+if (process.argv[1] && import.meta.url.endsWith(process.argv[1].replace(/\\/g, "/"))) {
   const server = createTcp4TupleServer();
   server.listen(3000, "0.0.0.0", () => console.log("[TCP] Listening on 0.0.0.0:3000"));
 }

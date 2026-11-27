@@ -52,7 +52,7 @@ export async function resolveDnsPreflight(hostname = "localhost") {
 }
 
 // Direct-run guard: only prints when executed via `node src/scripts/network-preflight.js`
-if (process.argv[1]?.endsWith("network-preflight.js")) {
+if (process.argv[1] && import.meta.url.endsWith(process.argv[1].replace(/\\/g, "/"))) {
   console.log("[PREFLIGHT] Binding Config:", getBindingConfig());
   console.log("[PREFLIGHT] IPv4 Interfaces:", listIPv4Interfaces());
   console.log("[PREFLIGHT] DNS Lookup:", await resolveDnsPreflight("localhost"));
