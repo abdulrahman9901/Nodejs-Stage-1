@@ -1,4 +1,5 @@
 import express from "express";
+import multer from "multer";
 import {
   authenticate,
   requireRoles,
@@ -11,6 +12,15 @@ const DEFAULT_WORKSPACES = [
   { id: "ws_1", name: "Manager A Workspace", ownerId: "user_A" },
   { id: "ws_2", name: "Manager B Workspace", ownerId: "user_B" },
 ];
+
+const upload = multer({ storage: multer.memoryStorage() });
+
+function parseUploadBody(req, res, next) {
+  if (req.is("multipart/form-data")) {
+    return upload.single("file")(req, res, next);
+  }
+  return next();
+}
 
 export function createApp({
   jwtSecret = "taskhub_s11_jwt_secret",
@@ -49,10 +59,17 @@ export function createApp({
     }
   );
 
-  // 2. Protected POST /api/v1/uploads (Auth 401 -> MIME 415 -> Size 413 -> Path Traversal Safe Filename 201)
-  app.post("/api/v1/uploads", authenticate(jwtSecret), (req, res) => {
-    const { originalName = "file.bin", mimetype = "", size = 0 } = req.body || {};
-    const validation = validateUploadFile({ mimetype, size });
+  // 2. Protected POST /api/v1/uploads (Auth 401 -> Multer multipart/form-data or JSON -> MIME 415 -> Size 413 -> 201)
+  app.post("/api/v1/uploads", authenticate(jwtSecret), parseUploadBody, (req, res) => {
+    const fileInfo = req.file
+      ? { originalName: req.file.originalname, mimetype: req.file.mimetype, size: req.file.size }
+      : {
+          originalName: req.body?.originalName || "file.bin",
+          mimetype: req.body?.mimetype || "",
+          size: req.body?.size || 0,
+        };
+
+    const validation = validateUploadFile({ mimetype: fileInfo.mimetype, size: fileInfo.size });
     if (!validation.ok) {
       return res.status(validation.statusCode).json({
         success: false,
@@ -61,11 +78,15 @@ export function createApp({
       });
     }
 
-    const storedFilename = buildSafeUploadFilename(originalName);
+    const storedFilename = buildSafeUploadFilename(fileInfo.originalName);
     return res.status(201).json({
       success: true,
       message: "File upload validated",
-      data: { storedFilename, mimetype, size },
+      data: {
+        storedFilename,
+        mimetype: fileInfo.mimetype,
+        size: fileInfo.size,
+      },
     });
   });
 

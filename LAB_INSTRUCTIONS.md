@@ -26,3 +26,8 @@ npm install
 
 ## Verify
 Run `npm test` — all 5 security tests must pass!
+
+
+## Verify Live in Postman
+1. Run `npm run dev`.
+2. Send `POST http://localhost:3000/api/v1/uploads` with `Authorization: Bearer <token>` and `Body -> form-data -> file` (File).

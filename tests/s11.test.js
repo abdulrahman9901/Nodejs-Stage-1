@@ -89,6 +89,19 @@ test("S11: Express pipeline enforces Bearer auth (401), RBAC (403), IDOR (403), 
     const uploadBody = await uploadRes.json();
     assert.equal(uploadBody.data.storedFilename.includes(".."), false);
     assert.equal(uploadBody.data.storedFilename.endsWith(".png"), true);
+    // 6. Real multipart/form-data file upload via Multer (Postman form-data equivalent)
+    const form = new FormData();
+    form.append("file", new Blob([new Uint8Array([137, 80, 78, 71])], { type: "image/png" }), "../../avatar.png");
+    const multiRes = await fetch(`${baseUrl}/api/v1/uploads`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${managerAToken}` },
+      body: form,
+    });
+    assert.equal(multiRes.status, 201);
+    const multiBody = await multiRes.json();
+    assert.equal(multiBody.data.storedFilename.includes(".."), false);
+    assert.equal(multiBody.data.storedFilename.endsWith(".png"), true);
+    assert.equal(multiBody.data.mimetype, "image/png");
   } finally {
     await new Promise((resolve) => server.close(resolve));
   }
