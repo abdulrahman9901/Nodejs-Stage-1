@@ -18,7 +18,7 @@ git branch -a
 git checkout student/s01-networking-lab
 
 # 3. Read the lab instructions & run automated tests
-cat LAB_INSTRUCTIONS.md   # PowerShell: Get-Content LAB_INSTRUCTIONS.md
+cat LAB_INSTRUCTIONS.md   # PowerShell: Get-Content LAB_INSTRUCTIONS.md   # PowerShell: Get-Content LAB_INSTRUCTIONS.md
 npm test
 
 # 4. Compare your work against the instructor solution
