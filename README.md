@@ -18,7 +18,7 @@ git branch -a
 git checkout student/s01-networking-lab
 
 # 3. Read the lab instructions & run automated tests
-cat LAB_INSTRUCTIONS.md
+cat LAB_INSTRUCTIONS.md   # PowerShell: Get-Content LAB_INSTRUCTIONS.md
 npm test
 
 # 4. Compare your work against the instructor solution
@@ -34,7 +34,7 @@ git diff student/s01-networking-lab..instructor/s01-networking-and-gitflow
 | **Base** | `main` | — | Runnable basic Node.js ESM HTTP server + `node --test` setup |
 | **S01** | `instructor/s01-networking-and-gitflow` | `student/s01-networking-lab`<br>`student/s01-conflict-branch-a`<br>`student/s01-conflict-branch-b` | Networking preflight (`0.0.0.0` vs `127.0.0.1`), TCP 4-tuple, **real Git merge conflict resolution lab** |
 | **S02** | `instructor/s02-http-rest-and-postman` | `student/s02-http-rest-lab` | HTTP status codes (`201`/`204`/`404`/`422`), JSON envelopes, Postman collection |
-| **S03** | `instructor/s03-event-loop-and-esm` | `student/s03-event-loop-and-esm-lab` | Event Loop phases, Microtasks vs Macrotasks, fail-fast `env.js`, fixing blocking code |
+| **S03** | `instructor/s03-event-loop-and-esm` | `student/s03-event-loop-and-esm-lab` | Event Loop phases, Microtasks vs Macrotasks, fail-fast `env-validator.js`, fixing blocking code |
 | **S04** | `instructor/s04-streams-events-and-raw-http` | `student/s04-streams-and-events-lab` | UTF-8 `Buffer.byteLength`, `EventEmitter` audit logger, `pipeline()` Gzip streams |
 | **S05** | `instructor/s05-express-routing-middleware` | `student/s05-express-routing-lab` | `app.js` vs `server.js`, `X-Request-Id` middleware, `mergeParams`, fixing `ERR_HTTP_HEADERS_SENT` |
 | **S06** | `instructor/s06-clean-architecture` | `student/s06-clean-architecture-lab` | Refactoring spaghetti route into 3-Tier Clean Architecture (`Controller -> Service -> Repo`) with DI & DTOs |
