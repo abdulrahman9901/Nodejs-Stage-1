@@ -1,5 +1,6 @@
 import { createApp } from "./app.js";
 import { serverConfig } from "./config/server-config.js";
+import { getPrismaClient } from "./config/prisma-singleton.js";
 import { createGracefulShutdown } from "./utils/graceful-shutdown.js";
 
 const isDirectRun =
@@ -17,7 +18,8 @@ if (isDirectRun) {
 
   // Step 1: Pass `server` and `prisma` into createGracefulShutdown.
   //         It returns a `shutdown` function that remembers them via closure!
-  const shutdown = createGracefulShutdown({ server, prisma: null });
+  const prisma = process.env.DATABASE_URL ? getPrismaClient() : null;
+  const shutdown = createGracefulShutdown({ server, prisma });
 
   // Step 2: Tell Node.js to call `shutdown` whenever the OS asks the app to stop:
   process.on("SIGTERM", () => shutdown("SIGTERM")); // Sent by Docker / Kubernetes / Cloud on deploy
