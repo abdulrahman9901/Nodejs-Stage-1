@@ -17,19 +17,19 @@ Once `npm test` passes, start the raw `node:http` streaming server that uses you
 node src/core/raw-http-stream.js
 ```
 
-Test all 3 endpoints using `curl` or Postman:
+Test all 3 endpoints using `curl.exe` (Windows PowerShell safe) or Postman:
 1. **UTF-8 Content-Length (Arabic + Emoji):**
    ```bash
-   curl -i http://localhost:3000/api/v1/greeting
+   curl.exe -i http://localhost:3000/api/v1/greeting
    ```
    Confirm the full message `"مرحبا من TaskHub 🚀"` arrives intact and `Content-Length` matches UTF-8 bytes.
 2. **On-the-fly Gzip NDJSON Stream:**
    ```bash
-   curl -i -H "Accept-Encoding: gzip" --compressed http://localhost:3000/api/v1/export
+   curl.exe -i -H "Accept-Encoding: gzip" --compressed http://localhost:3000/api/v1/export
    ```
    Confirm `Content-Encoding: gzip` is in the response headers and all 50 NDJSON lines stream cleanly.
 3. **EventEmitter Audit Trail:**
    ```bash
-   curl http://localhost:3000/api/v1/audit
+   curl.exe http://localhost:3000/api/v1/audit
    ```
    Confirm both `GREETING_VIEWED` and `EXPORT_STREAMED` were recorded by `AuditEventBus`.
