@@ -33,7 +33,7 @@ export class AuthService {
       email: cleanEmail,
       name: name?.trim() || "Member",
       role,
-      passwordHash: hashPassword(password),
+      passwordHash: await hashPassword(password),
     };
     this.users.push(user);
 
@@ -55,7 +55,7 @@ export class AuthService {
       throw err;
     }
 
-    if (!verifyPassword(password || "", user.passwordHash)) {
+    if (!(await verifyPassword(password || "", user.passwordHash))) {
       const err = new Error("Incorrect password for this account");
       err.statusCode = 401;
       err.errorCode = "WRONG_PASSWORD";

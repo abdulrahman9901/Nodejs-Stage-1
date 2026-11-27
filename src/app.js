@@ -1,5 +1,6 @@
 import express from "express";
 import { AuthService } from "./modules/auth/auth.service.js";
+import { verifyJwt } from "./modules/auth/crypto-auth.js";
 
 export function createApp(authService = new AuthService()) {
   const app = express();
@@ -28,6 +29,31 @@ export function createApp(authService = new AuthService()) {
       });
     } catch (err) {
       return next(err);
+    }
+  });
+
+  app.get("/api/v1/auth/me", (req, res) => {
+    const authHeader = req.headers?.authorization || "";
+    if (!authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({
+        success: false,
+        errorCode: "UNAUTHENTICATED",
+        message: "Missing or invalid Bearer token",
+      });
+    }
+    try {
+      const decoded = verifyJwt(authHeader.slice("Bearer ".length).trim(), authService.jwtSecret);
+      return res.status(200).json({
+        success: true,
+        message: "Current user fetched",
+        data: { id: decoded.sub, email: decoded.email, role: decoded.role },
+      });
+    } catch {
+      return res.status(401).json({
+        success: false,
+        errorCode: "UNAUTHENTICATED",
+        message: "Invalid or expired token",
+      });
     }
   });
 

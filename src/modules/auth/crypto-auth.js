@@ -1,12 +1,15 @@
 import crypto from "node:crypto";
+import { promisify } from "node:util";
 
-export function hashPassword(plainPassword) {
-  // TODO(student): SECURITY BUG! Never store plaintext passwords! Use random salt + scryptSync.
+const scryptAsync = promisify(crypto.scrypt);
+
+export async function hashPassword(plainPassword) {
+  // TODO(student): SECURITY BUG! Never store plaintext passwords! Use random salt + await scryptAsync(plainPassword, salt, 64).
   return plainPassword;
 }
 
-export function verifyPassword(plainPassword, storedHash) {
-  // TODO(student): Compare derived key using crypto.timingSafeEqual
+export async function verifyPassword(plainPassword, storedHash) {
+  // TODO(student): Derive key asynchronously with scryptAsync and compare using crypto.timingSafeEqual
   return plainPassword === storedHash;
 }
 

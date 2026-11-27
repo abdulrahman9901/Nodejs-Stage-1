@@ -7,8 +7,8 @@ npm install
 
 ## Part A: Fix Password Hashing, JWT Verification & DTO Leaks (~20 min)
 1. Open `src/modules/auth/crypto-auth.js`.
-2. **`hashPassword(plainPassword)`**: Generate a 16-byte random hex salt and derive a 64-byte key with `crypto.scryptSync(plainPassword, salt, 64)`, returning `"${salt}:${derived}"`.
-3. **`verifyPassword(plainPassword, storedHash)`**: Split the stored salt and hash, re-derive the key with `crypto.scryptSync`, verify matching byte lengths, and compare with `crypto.timingSafeEqual`.
+2. **`hashPassword(plainPassword)`**: Generate a 16-byte random hex salt and derive a 64-byte key with `await scryptAsync(plainPassword, salt, 64)`, returning `"${salt}:${derived}"`.
+3. **`verifyPassword(plainPassword, storedHash)`**: Split the stored salt and hash, re-derive the key asynchronously with `await scryptAsync(...)`, verify matching byte lengths, and compare with `crypto.timingSafeEqual`.
 4. **`verifyJwt(token, secret)`**:
    - Recompute the expected HMAC-SHA256 signature (`base64url`) over `"${header}.${body}"`.
    - Reject mismatched or different-length signatures by throwing `new Error("INVALID_SIGNATURE")`.
@@ -22,4 +22,4 @@ npm install
 
 ## Part C: Verify (~10 min)
 1. Run `npm test` — all 5 security tests must pass!
-2. Run `npm run dev` and test `POST /api/v1/auth/register` and `POST /api/v1/auth/login` in Postman.
+2. Run `npm run dev` and test `POST /api/v1/auth/register` and `POST /api/v1/auth/login` and `GET /api/v1/auth/me` (with Bearer token) in Postman.
