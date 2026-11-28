@@ -1,27 +1,51 @@
+/**
+ * Demonstrates how the Node.js Event Loop executes:
+ * 1. Normal Synchronous functions & console.log() (Call Stack)
+ * 2. Promises (.then / async-await) (Microtask Queue)
+ * 3. Timer Callbacks (setTimeout) (Callback / Macrotask Queue)
+ */
 export function runEventLoopDemo() {
-  return new Promise((resolve) => {
-    setImmediate(() => {
-      const order = [];
-      order.push("sync");
+  const logs = [];
 
-      setTimeout(() => {
-        order.push("timer-macrotask");
-        resolve(order);
-      }, 0);
+  function runSyncStart() {
+    console.log("1. Start (Synchronous)");
+    logs.push("1. Start (Synchronous)");
+  }
 
-      Promise.resolve().then(() => {
-        order.push("promise-microtask");
-      });
+  function runTimerCallback(done) {
+    setTimeout(() => {
+      console.log("4. Timeout Callback (0ms Timer)");
+      logs.push("4. Timeout Callback (0ms Timer)");
+      done(logs);
+    }, 0);
+  }
 
-      process.nextTick(() => {
-        order.push("nextTick");
-      });
+  function runPromiseTask() {
+    Promise.resolve().then(() => {
+      console.log("3. Promise.then (Microtask)");
+      logs.push("3. Promise.then (Microtask)");
     });
+  }
+
+  function runSyncEnd() {
+    console.log("2. End (Synchronous)");
+    logs.push("2. End (Synchronous)");
+  }
+
+  // Call the functions in sequence inside our main function:
+  return new Promise((resolve) => {
+    runSyncStart();
+    runTimerCallback(resolve);
+    runPromiseTask();
+    runSyncEnd();
   });
 }
 
+/**
+ * TODO(student): Look at the 4 helper functions called inside runEventLoopDemo() above.
+ * In what exact order will their console.log messages print?
+ * Return the array of 4 strings in the exact execution order!
+ */
 export function getExpectedEventLoopOrder() {
-  // TODO(student): Put these 4 labels in the EXACT order Node.js executes them!
-  // Labels: "sync", "nextTick", "promise-microtask", "timer-macrotask"
-  return ["sync", "timer-macrotask", "promise-microtask", "nextTick"];
+  return [];
 }
