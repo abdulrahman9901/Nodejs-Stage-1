@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { loadValidatedEnv } from "../src/config/env-validator.js";
 import { runEventLoopDemo, getExpectedEventLoopOrder } from "../src/demos/event-loop-order.js";
-import { countPrimesNonBlocking, readPackageJsonAsync } from "../src/demos/blocking-fix.js";
+import { countPrimesNonBlocking, readPackageJsonAsync, fetchAndSanitizeMongoDocument } from "../src/demos/blocking-fix.js";
 
 test("S03: loadValidatedEnv fails fast when secrets are missing", () => {
   assert.throws(() => loadValidatedEnv({}), /Missing required environment variables/);
@@ -42,4 +42,21 @@ test("S03: readPackageJsonAsync reads package.json using Pure ESM import.meta.ur
   const pkg = await readPackageJsonAsync();
   assert.equal(pkg.name, "taskhub-course-lab");
   assert.equal(pkg.type, "module");
+});
+
+test("S03: fetchAndSanitizeMongoDocument translates MongoDB _id (PK) to id, strips passwordHash, and preserves Foreign Keys", async () => {
+  const rawMongoUser = {
+    _id: "65f1a2b3c4d5e6f7a8b9c0d1",
+    name: "Sara Ahmed",
+    email: "sara@afaaq.com",
+    passwordHash: "$2b$10$secretHashShouldNeverLeak",
+    workspaceId: "ws_101",
+  };
+
+  const dto = await fetchAndSanitizeMongoDocument(rawMongoUser);
+  assert.equal(dto.id, "65f1a2b3c4d5e6f7a8b9c0d1");
+  assert.equal(dto._id, undefined);
+  assert.equal(dto.passwordHash, undefined);
+  assert.equal(dto.workspaceId, "ws_101");
+  assert.equal(dto.email, "sara@afaaq.com");
 });

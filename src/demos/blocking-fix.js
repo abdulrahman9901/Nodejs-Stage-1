@@ -32,3 +32,14 @@ export async function countPrimesNonBlocking(limit, chunkSize = 2000) {
 export async function readPackageJsonAsync() {
   return {};
 }
+
+/**
+ * TODO(student): Simulate an asynchronous MongoDB document query and sanitize the result:
+ * 1. Yield to the Event Loop: await new Promise((resolve) => setImmediate(resolve));
+ * 2. Use Modern JS object destructuring (`const { _id, passwordHash, ...safeFields } = rawDoc`)
+ *    to strip `_id` and `passwordHash`.
+ * 3. Return `{ id: String(_id), ...safeFields }` so Primary Key `id` and Foreign Keys (`workspaceId`) are preserved!
+ */
+export async function fetchAndSanitizeMongoDocument(rawDoc) {
+  return rawDoc;
+}
