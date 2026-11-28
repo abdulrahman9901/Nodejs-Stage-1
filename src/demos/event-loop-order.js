@@ -1,34 +1,51 @@
+/**
+ * Demonstrates how the Node.js Event Loop executes:
+ * 1. Normal Synchronous functions & console.log() (Call Stack)
+ * 2. Promises (.then / async-await) (Microtask Queue)
+ * 3. Timer Callbacks (setTimeout) (Callback / Macrotask Queue)
+ */
 export function runEventLoopDemo() {
-  return new Promise((resolve) => {
-    // Run inside a fresh macrotask tick (setImmediate) so nextTick vs Promise priority is canonical
-    setImmediate(() => {
-      const order = [];
-      order.push("sync");
+  const logs = [];
 
-      setTimeout(() => {
-        order.push("timer-macrotask");
-        resolve(order);
-      }, 0);
+  function runSyncStart() {
+    console.log("1. Start (Synchronous)");
+    logs.push("1. Start (Synchronous)");
+  }
 
-      Promise.resolve().then(() => {
-        order.push("promise-microtask");
-      });
+  function runTimerCallback(done) {
+    setTimeout(() => {
+      console.log("4. Timeout Callback (0ms Timer)");
+      logs.push("4. Timeout Callback (0ms Timer)");
+      done(logs);
+    }, 0);
+  }
 
-      process.nextTick(() => {
-        order.push("nextTick");
-      });
+  function runPromiseTask() {
+    Promise.resolve().then(() => {
+      console.log("3. Promise.then (Microtask)");
+      logs.push("3. Promise.then (Microtask)");
     });
+  }
+
+  function runSyncEnd() {
+    console.log("2. End (Synchronous)");
+    logs.push("2. End (Synchronous)");
+  }
+
+  // Call the functions in sequence inside our main function:
+  return new Promise((resolve) => {
+    runSyncStart();
+    runTimerCallback(resolve);
+    runPromiseTask();
+    runSyncEnd();
   });
 }
 
 export function getExpectedEventLoopOrder() {
-  return ["sync", "nextTick", "promise-microtask", "timer-macrotask"];
-}
-
-const isDirectRun =
-  process.argv[1] && import.meta.url.endsWith(process.argv[1].replace(/\\/g, "/"));
-if (isDirectRun) {
-  const order = await runEventLoopDemo();
-  console.log("[S03] Real Node.js Event Loop execution order:");
-  order.forEach((step, idx) => console.log(`  ${idx + 1}. ${step}`));
+  return [
+    "1. Start (Synchronous)",
+    "2. End (Synchronous)",
+    "3. Promise.then (Microtask)",
+    "4. Timeout Callback (0ms Timer)",
+  ];
 }
