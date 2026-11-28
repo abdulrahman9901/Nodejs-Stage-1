@@ -49,3 +49,10 @@ export function getExpectedEventLoopOrder() {
     "4. Timeout Callback (0ms Timer)",
   ];
 }
+
+// Run directly in terminal: node src/demos/event-loop-order.js
+const isDirectRun =
+  process.argv[1] && import.meta.url.endsWith(process.argv[1].replace(/\\/g, "/"));
+if (isDirectRun) {
+  await runEventLoopDemo();
+}
