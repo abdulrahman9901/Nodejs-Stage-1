@@ -46,6 +46,21 @@ export async function readPackageJsonAsync() {
   return JSON.parse(raw);
 }
 
+/**
+ * Simulates an asynchronous MongoDB document query (Non-Blocking I/O) and
+ * translates the raw BSON/MongoDB document (`_id`, `passwordHash`) into a safe
+ * Data Transfer Object (DTO) with Primary Key `id` and Foreign Keys intact.
+ */
+export async function fetchAndSanitizeMongoDocument(rawDoc) {
+  // Simulate non-blocking database network I/O on the Event Loop
+  await new Promise((resolve) => setImmediate(resolve));
+  const { _id, passwordHash, ...safeFields } = rawDoc;
+  return {
+    id: String(_id),
+    ...safeFields,
+  };
+}
+
 const isDirectRun =
   process.argv[1] && import.meta.url.endsWith(process.argv[1].replace(/\\/g, "/"));
 if (isDirectRun) {
