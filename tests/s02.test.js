@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { okEnvelope, errorEnvelope, getStatusForAction } from "../src/http/envelope.js";
+import { okEnvelope, errorEnvelope, getStatusForAction, getTaskHubErdBlueprint } from "../src/http/envelope.js";
 import { createContractServer } from "../src/http/contract-server.js";
 
 test("S02: okEnvelope follows standard enterprise JSON contract", () => {
@@ -35,6 +35,28 @@ test("S02: REST status code mapping matches HTTP specification", () => {
   assert.equal(getStatusForAction("CONFLICT"), 409);
   assert.equal(getStatusForAction("VALIDATION_ERROR"), 422);
   assert.equal(getStatusForAction("UNKNOWN_ACTION"), 500);
+});
+
+test("S02: TaskHub ERD Blueprint defines Primary Keys (PK), Foreign Keys (FK), 1:1/1:N/N:1/N:M relations & REST endpoints", () => {
+  const erd = getTaskHubErdBlueprint();
+
+  // 1. User entity (PK: id, Unique: email, 1:1 UserProfile & 1:N Workspace)
+  assert.equal(erd.User.primaryKey, "id");
+  assert.deepEqual(erd.User.uniqueKeys, ["email"]);
+  assert.equal(erd.User.restEndpoint, "/api/v1/users");
+  assert.ok(erd.User.relationships.some((r) => r.type === "1:1" && r.target === "UserProfile"));
+  assert.ok(erd.User.relationships.some((r) => r.type === "1:N" && r.target === "Workspace"));
+
+  // 2. Workspace entity (PK: id, FK: ownerId -> N:1 User, 1:N Task)
+  assert.equal(erd.Workspace.primaryKey, "id");
+  assert.deepEqual(erd.Workspace.foreignKeys, ["ownerId"]);
+  assert.equal(erd.Workspace.restEndpoint, "/api/v1/workspaces");
+
+  // 3. Task entity (PK: id, FKs: workspaceId & assigneeId, N:M Tag via TaskTag junction)
+  assert.equal(erd.Task.primaryKey, "id");
+  assert.deepEqual(erd.Task.foreignKeys, ["workspaceId", "assigneeId"]);
+  assert.equal(erd.Task.restEndpoint, "/api/v1/tasks");
+  assert.ok(erd.Task.relationships.some((r) => r.type === "N:M" && r.junctionEntity === "TaskTag"));
 });
 
 test("S02: contract-server serves GET, POST, PATCH, and DELETE with standard envelopes", async () => {
